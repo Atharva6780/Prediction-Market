@@ -140,7 +140,7 @@ const Signup = () => {
           {/* Button */}
           <button
             onClick={handleSignup}
-            className="w-full bg-blue-600 text-white py-2 hover:bg-blue-700"
+            className="w-full bg-[#1d4570] text-white py-2 hover:bg-[#2965a4]"
           >
             Create account →
           </button>
