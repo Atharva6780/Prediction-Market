@@ -42,7 +42,7 @@ const Signup = () => {
       <div className="hidden lg:flex w-1/2 items-center justify-center bg-gray-50">
         <div className="relative w-full h-full flex items-center justify-center">
           {/* Dotted background */}
-          <div className="absolute inset-0 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] [background-size:24px_24px]" />
+          <div className="absolute inset-0 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] bg-size-[24px_24px]" />
 
           {/* Abstract shapes */}
           <div className="relative z-10 flex gap-6">
