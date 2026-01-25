@@ -5,7 +5,6 @@ const { loginSchema, signupSchema } = require("../schema/loginSchema");
 
 /* -------------------- LOGIN -------------------- */
 const loginFunction = async (req, res) => {
-  console.log("LOGIN API HIT");
 
   const result = loginSchema.safeParse(req.body);
   if (!result.success) {
