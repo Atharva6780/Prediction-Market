@@ -5,6 +5,7 @@ import Navbar from "../Components/Navbar";
 import Profile from "../Pages/Profile";
 import Home from "../Pages/Home";
 import AdminForm from "../Pages/AdminForm";
+import MarketDetail from "../Pages/MarketDetails";
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
       <Route path="/profile" element={<Profile />} />
       <Route path="/" element={<Home />} />
       <Route path="/adminform" element={<AdminForm />} />
+      <Route path="/markets/:marketId" element={<MarketDetail />} />
       {/* <Route path="/register" element={<Register />} /> */}
     </Routes>
     </>
