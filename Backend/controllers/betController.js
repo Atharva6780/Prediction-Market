@@ -74,4 +74,17 @@ const placeTrade = async (req, res) => {
   }
 };
 
-module.exports = { placeTrade };
+const getMyBets = async (req, res) => {
+  try {
+    const bets = await Bet.find({ userId: req.user.id })
+      .populate("marketId", "question endDate")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ bets });
+  } catch (error) {
+    console.error("Get bets error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { placeTrade, getMyBets };
