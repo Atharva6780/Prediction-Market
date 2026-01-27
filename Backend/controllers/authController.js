@@ -37,7 +37,7 @@ const loginFunction = async (req, res) => {
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
 
     // 5️⃣ Response
@@ -48,9 +48,9 @@ const loginFunction = async (req, res) => {
         id: user._id,
         email: user.email,
         userName: user.userName,
+        balance: user.balance,
       },
     });
-
   } catch (error) {
     console.error("Login error:", error);
     return res.status(500).json({ message: "Server error" });
@@ -88,12 +88,12 @@ const signupFunction = async (req, res) => {
       userName,
       email,
       password: hashedPassword,
+      balance: 10000,
     });
 
     return res.status(201).json({
       message: "Signup successful",
     });
-
   } catch (error) {
     console.error("Signup error:", error);
     return res.status(500).json({ message: "Server error" });

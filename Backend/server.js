@@ -11,12 +11,14 @@ const port=3000
 const authRoutes=require('./routes/authRoutes')
 const marketRoutes = require("./routes/cardRoutes");
 const betRoutes=require("./routes/betRoutes")
+const userRoutes=require("./routes/userRoutes")
 
 app.use(cors())
 app.use(express.json())
 app.use('/api/auth',authRoutes)
 app.use("/api/markets", marketRoutes);
 app.use("/api/bets", betRoutes);
+app.use("/api/users", userRoutes);
 
 // app.get('/api/auth',(req,res)=>{
 //     res.send("hello bro")
