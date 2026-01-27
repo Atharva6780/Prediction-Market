@@ -5,19 +5,19 @@ const { loginSchema, signupSchema } = require("../schema/loginSchema");
 
 /* -------------------- LOGIN -------------------- */
 const loginFunction = async (req, res) => {
-
-  const result = loginSchema.safeParse(req.body);
-  if (!result.success) {
-    return res.status(400).json({
-      message: "Invalid Input",
-      errors: result.error.errors,
-    });
-  }
-
-  const { email, password } = result.data;
-
   try {
-    // 1. Find user
+    // 1️⃣ Validate input
+    const result = loginSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Invalid input",
+        errors: result.error.errors,
+      });
+    }
+
+    const { email, password } = result.data;
+
+    // 2️⃣ Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
@@ -25,7 +25,7 @@ const loginFunction = async (req, res) => {
       });
     }
 
-    // 2. Compare password
+    // 3️⃣ Compare password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -33,14 +33,15 @@ const loginFunction = async (req, res) => {
       });
     }
 
-    // 3. Generate JWT
+    // 4️⃣ Generate JWT
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" },
+      { expiresIn: "1h" }
     );
 
-    res.status(200).json({
+    // 5️⃣ Response
+    return res.status(200).json({
       message: "Login successful",
       token,
       user: {
@@ -49,26 +50,28 @@ const loginFunction = async (req, res) => {
         userName: user.userName,
       },
     });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Login error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
 /* -------------------- SIGNUP -------------------- */
 const signupFunction = async (req, res) => {
-  const result = signupSchema.safeParse(req.body);
-  if (!result.success) {
-    return res.status(400).json({
-      message: "Invalid Input",
-      errors: result.error.errors,
-    });
-  }
-
-  const { name, userName, email, password } = result.data;
-
   try {
-    // 1. Check if user exists
+    // 1️⃣ Validate input
+    const result = signupSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Invalid input",
+        errors: result.error.errors,
+      });
+    }
+
+    const { name, userName, email, password } = result.data;
+
+    // 2️⃣ Check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(409).json({
@@ -76,10 +79,10 @@ const signupFunction = async (req, res) => {
       });
     }
 
-    // 2. Hash password
+    // 3️⃣ Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // 3. Create user
+    // 4️⃣ Create user
     await User.create({
       name,
       userName,
@@ -87,12 +90,13 @@ const signupFunction = async (req, res) => {
       password: hashedPassword,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       message: "Signup successful",
     });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Signup error:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
