@@ -7,10 +7,7 @@ const betSchema = z.object({
     required_error: "Outcome is required",
   }),
 
-  amount: z
-    .number()
-    .int()
-    .positive("Amount must be greater than 0"),
+  amount: z.number().int().positive("Amount must be greater than 0"),
 });
 
 module.exports = { betSchema };

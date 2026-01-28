@@ -43,13 +43,13 @@ const betSchema = new mongoose.Schema(
     // Bet status (useful later for settlement)
     status: {
       type: String,
-      enum: ["OPEN", "WON", "LOST"],
+      enum: ["OPEN", "CLOSED", "WON", "LOST"],
       default: "OPEN",
     },
   },
   {
     timestamps: true, // adds createdAt & updatedAt automatically
-  }
+  },
 );
 
 module.exports = mongoose.model("Bet", betSchema);

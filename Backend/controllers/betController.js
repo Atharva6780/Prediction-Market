@@ -2,11 +2,11 @@ const Bet = require("../models/bet");
 const Market = require("../models/Market");
 const User = require("../models/user");
 const { betSchema } = require("../schema/betSchema");
+const { sellBetSchema } = require("../schema/sellBetSchema");
 
 /* ---------------- PLACE TRADE ---------------- */
 const placeTrade = async (req, res) => {
   try {
-    // 1️⃣ Validate request body
     const result = betSchema.safeParse(req.body);
 
     if (!result.success) {
@@ -18,55 +18,32 @@ const placeTrade = async (req, res) => {
 
     const { marketId, outcome, amount } = result.data;
 
-    // 2️⃣ Find user
     const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
-    }
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    // 3️⃣ Check balance
     if (user.balance < amount) {
-      return res.status(400).json({
-        message: "Insufficient balance",
-      });
+      return res.status(400).json({ message: "Insufficient balance" });
     }
 
-    // 4️⃣ Find market
     const market = await Market.findById(marketId);
-    if (!market) {
-      return res.status(404).json({
-        message: "Market not found",
-      });
-    }
+    if (!market) return res.status(404).json({ message: "Market not found" });
 
-    // 5️⃣ Check market status
     if (market.status !== "OPEN") {
-      return res.status(400).json({
-        message: "Market is not open for trading",
-      });
+      return res.status(400).json({ message: "Market is not open" });
     }
 
-    // 6️⃣ Check market end time
     if (new Date(market.endDate) < new Date()) {
-      return res.status(400).json({
-        message: "Market has expired",
-      });
+      return res.status(400).json({ message: "Market expired" });
     }
 
-    // 7️⃣ Validate outcome
     const selectedOutcome = market.outcomes.find(
       (o) => o.label === outcome
     );
 
     if (!selectedOutcome) {
-      return res.status(400).json({
-        message: "Invalid outcome",
-      });
+      return res.status(400).json({ message: "Invalid outcome" });
     }
 
-    // 8️⃣ Create bet
     const bet = await Bet.create({
       marketId,
       outcome,
@@ -76,26 +53,20 @@ const placeTrade = async (req, res) => {
       status: "OPEN",
     });
 
-    // 9️⃣ Deduct user balance
     user.balance -= amount;
     await user.save();
 
-    // 🔟 Update market volume
     market.volume += amount;
     await market.save();
 
-    // 1️⃣1️⃣ Response
-    return res.status(201).json({
+    res.status(201).json({
       message: "Trade placed successfully",
       bet,
-      balance: user.balance, // return updated balance
+      balance: user.balance,
     });
-    
   } catch (error) {
-    console.error("Place trade error:", error);
-    return res.status(500).json({
-      message: "Server error",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -108,9 +79,76 @@ const getMyBets = async (req, res) => {
 
     res.status(200).json({ bets });
   } catch (error) {
-    console.error("Get bets error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-module.exports = { placeTrade, getMyBets };
+/* ---------------- SELL BET ---------------- */
+const sellMyBets = async (req, res) => {
+  try {
+    const result = sellBetSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Invalid sell data",
+        errors: result.error.errors,
+      });
+    }
+
+    const { marketId, amount } = result.data;
+
+    const bet = await Bet.findOne({
+      userId: req.user.id,
+      marketId,
+      status: "OPEN",
+    });
+
+    if (!bet) {
+      return res.status(404).json({ message: "Active bet not found" });
+    }
+
+    if (amount > bet.amount) {
+      return res
+        .status(400)
+        .json({ message: "Sell amount exceeds bet amount" });
+    }
+
+    const market = await Market.findById(marketId);
+    if (!market) {
+      return res.status(404).json({ message: "Market not found" });
+    }
+
+    // refund logic (simple version)
+    const refund = amount;
+
+    const user = await User.findById(req.user.id);
+    user.balance += refund;
+    await user.save();
+
+    market.volume -= refund;
+    await market.save();
+
+    if (amount === bet.amount) {
+      bet.status = "CLOSED";
+    } else {
+      bet.amount -= amount;
+    }
+
+    await bet.save();
+
+    res.json({
+      message: "Position sold successfully",
+      bet,
+      balance: user.balance,
+    });
+  } catch (error) {
+    console.error("Sell error:", error);
+    res.status(500).json({ message: "Sell failed" });
+  }
+};
+
+module.exports = {
+  placeTrade,
+  getMyBets,
+  sellMyBets,
+};

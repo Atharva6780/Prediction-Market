@@ -4,6 +4,10 @@ const Portfolio = () => {
   const [bets, setBets] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // 🔹 sell modal state
+  const [selectedBet, setSelectedBet] = useState(null);
+  const [sellAmount, setSellAmount] = useState("");
+
   const token = localStorage.getItem("token");
 
   useEffect(() => {
@@ -27,34 +31,32 @@ const Portfolio = () => {
     fetchBets();
   }, [token]);
 
-  const handleSell = async (bet) => {
-    const marketEnded =
-      new Date(bet.marketId?.endDate) < new Date();
-
-    if (marketEnded) {
-      alert("Market has ended. You cannot sell this position.");
+  /* ---------------- SELL CONFIRM ---------------- */
+  const confirmSell = async () => {
+    if (!sellAmount || sellAmount <= 0) {
+      alert("Enter a valid amount");
       return;
     }
 
-    const confirmSell = window.confirm(
-      "Are you sure you want to sell this position?"
-    );
-    if (!confirmSell) return;
+    if (sellAmount > selectedBet.amount) {
+      alert("Sell amount cannot exceed bet amount");
+      return;
+    }
 
-    // SELL = opposite outcome
-    const sellOutcome = bet.outcome === "YES" ? "NO" : "YES";
+    const sellOutcome =
+      selectedBet.outcome === "YES" ? "NO" : "YES";
 
     try {
-      const res = await fetch("http://localhost:3000/api/bets/trade", {
+      const res = await fetch("http://localhost:3000/api/bets/sell", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          marketId: bet.marketId._id,
+          marketId: selectedBet.marketId._id,
           outcome: sellOutcome,
-          amount: bet.amount,
+          amount: sellAmount,
         }),
       });
 
@@ -67,14 +69,17 @@ const Portfolio = () => {
 
       alert("Position sold successfully");
 
-      // refresh portfolio
       setBets((prev) =>
         prev.map((b) =>
-          b._id === bet._id
+          b._id === selectedBet._id
             ? { ...b, status: "CLOSED" }
             : b
         )
       );
+
+      // close modal
+      setSelectedBet(null);
+      setSellAmount("");
 
     } catch (error) {
       console.error(error);
@@ -90,7 +95,6 @@ const Portfolio = () => {
     <div className="min-h-screen bg-gray-50 px-6 py-8">
       <div className="max-w-6xl mx-auto">
 
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-gray-900">
             Portfolio
@@ -100,27 +104,23 @@ const Portfolio = () => {
           </p>
         </div>
 
-        {/* Empty State */}
         {bets.length === 0 && (
           <div className="bg-white border rounded-lg p-8 text-center text-gray-500">
             You haven’t placed any trades yet.
           </div>
         )}
 
-        {/* Table */}
         {bets.length > 0 && (
           <div className="bg-white border rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr className="text-left text-gray-600">
-                  <th className="px-4 py-3 font-medium">Market</th>
-                  <th className="px-4 py-3 font-medium">Outcome</th>
-                  <th className="px-4 py-3 font-medium">Amount</th>
-                  <th className="px-4 py-3 font-medium">Status</th>
-                  <th className="px-4 py-3 font-medium">Placed At</th>
-                  <th className="px-4 py-3 font-medium text-right">
-                    Action
-                  </th>
+                  <th className="px-4 py-3">Market</th>
+                  <th className="px-4 py-3">Outcome</th>
+                  <th className="px-4 py-3">Amount</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Placed At</th>
+                  <th className="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
 
@@ -130,40 +130,25 @@ const Portfolio = () => {
                     new Date(bet.marketId?.endDate) < new Date();
 
                   return (
-                    <tr
-                      key={bet._id}
-                      className="border-b last:border-b-0 hover:bg-gray-50"
-                    >
-                      <td className="px-4 py-3 text-gray-900">
-                        {bet.marketId?.question || "—"}
+                    <tr key={bet._id} className="border-b hover:bg-gray-50">
+                      <td className="px-4 py-3">
+                        {bet.marketId?.question}
                       </td>
 
                       <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            bet.outcome === "YES"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          bet.outcome === "YES"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}>
                           {bet.outcome}
                         </span>
                       </td>
 
-                      <td className="px-4 py-3 text-gray-900">
-                        ₹{bet.amount}
-                      </td>
+                      <td className="px-4 py-3">₹{bet.amount}</td>
 
                       <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            bet.status === "WON"
-                              ? "bg-green-100 text-green-700"
-                              : bet.status === "LOST"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-gray-100 text-gray-700"
-                          }`}
-                        >
+                        <span className="px-2 py-1 text-xs rounded bg-gray-100">
                           {bet.status || "OPEN"}
                         </span>
                       </td>
@@ -174,11 +159,11 @@ const Portfolio = () => {
 
                       <td className="px-4 py-3 text-right">
                         <button
-                          onClick={() => handleSell(bet)}
+                          onClick={() => setSelectedBet(bet)}
                           disabled={marketEnded || bet.status !== "OPEN"}
-                          className={`px-3 py-1 text-xs rounded-md font-medium ${
+                          className={`px-3 py-1 text-xs rounded ${
                             marketEnded || bet.status !== "OPEN"
-                              ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              ? "bg-gray-100 text-gray-400"
                               : "bg-red-100 text-red-700 hover:bg-red-200"
                           }`}
                         >
@@ -193,6 +178,52 @@ const Portfolio = () => {
           </div>
         )}
       </div>
+
+      {/* ================= SELL MODAL ================= */}
+      {selectedBet && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-2">
+              Sell Position
+            </h2>
+
+            <p className="text-sm text-gray-500 mb-4">
+              {selectedBet.marketId.question}
+            </p>
+
+            <div className="mb-4">
+              <label className="text-sm font-medium">
+                Sell Amount
+              </label>
+              <input
+                type="number"
+                value={sellAmount}
+                onChange={(e) => setSellAmount(Number(e.target.value))}
+                className="w-full mt-1 border px-3 py-2 rounded"
+                placeholder={`Max ₹${selectedBet.amount}`}
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setSelectedBet(null);
+                  setSellAmount("");
+                }}
+                className="px-4 py-2 text-sm border rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSell}
+                className="px-4 py-2 text-sm bg-red-600 text-white rounded"
+              >
+                Confirm Sell
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
