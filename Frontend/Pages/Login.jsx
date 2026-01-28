@@ -5,8 +5,8 @@ import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email,setEmail]=useState("")
-  const [password,setPassword]=useState("")
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   async function handleLogin() {
     try {
@@ -22,24 +22,30 @@ const Login = () => {
       });
 
       const data = await response.json();
-      console.log(data)
+      console.log(data);
 
-      localStorage.setItem("token",data.token)
-      navigate('/')
+      // ✅ IMPORTANT FIX
+      if (!response.ok) {
+        alert(data.message || "Invalid email or password");
+        return;
+      }
+
+      // ✅ Store token only if login is successful
+      localStorage.setItem("token", data.token);
+      navigate("/");
 
     } catch (error) {
       console.log(error);
+      alert("Something went wrong");
     }
   }
+
   return (
     <div className="min-h-screen flex bg-white">
       {/* LEFT – Design / Illustration */}
       <div className="hidden lg:flex w-1/2 items-center justify-center bg-gray-50">
         <div className="relative w-full h-full flex items-center justify-center">
-          {/* Decorative dots */}
           <div className="absolute inset-0 bg-[radial-gradient(#d1d5db_1px,transparent_1px)] bg-size-[24px_24px]" />
-
-          {/* Decorative shapes */}
           <div className="relative z-10 flex gap-6">
             <div className="w-16 h-16 bg-purple-400 rotate-45 rounded-sm" />
             <div className="w-12 h-12 bg-indigo-500 rotate-45 rounded-sm" />
@@ -51,7 +57,6 @@ const Login = () => {
       {/* RIGHT – Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6">
         <div className="w-full max-w-md">
-          {/* Heading */}
           <h1 className="text-3xl font-semibold mb-2">Log in</h1>
           <p className="text-sm text-gray-600 mb-6">
             Don’t have an account?{" "}
@@ -60,7 +65,6 @@ const Login = () => {
             </Link>
           </p>
 
-          {/* Email */}
           <div className="mb-5">
             <label className="block text-sm font-medium mb-1">Email</label>
             <input
@@ -70,7 +74,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Password */}
           <div className="mb-3">
             <label className="block text-sm font-medium mb-1">Password</label>
             <input
@@ -80,7 +83,6 @@ const Login = () => {
             />
           </div>
 
-          {/* Remember + Forgot */}
           <div className="flex items-center justify-between mb-6 text-sm">
             <label className="flex items-center gap-2">
               <input type="checkbox" />
@@ -91,7 +93,6 @@ const Login = () => {
             </Link>
           </div>
 
-          {/* Button */}
           <button
             onClick={handleLogin}
             className="w-full bg-[#1d4570] text-white py-2 flex items-center justify-center gap-2 hover:bg-[#2965a4]"
@@ -99,10 +100,8 @@ const Login = () => {
             Continue →
           </button>
 
-          {/* Divider */}
           <div className="my-6 border-t" />
 
-          {/* Alternative Login */}
           <button className="w-full border border-gray-300 py-2 flex items-center justify-center gap-2 hover:bg-gray-50">
             Continue with Google
           </button>
