@@ -1,14 +1,28 @@
 const Bet = require("../models/bet");
-const Market = require("../models/Market");
+const Market = require("../models/market");
 const User = require("../models/user");
 const { betSchema } = require("../schema/betSchema");
 const { sellBetSchema } = require("../schema/sellBetSchema");
+
+/* ---------- Helper: Update implied probabilities ---------- */
+const updateMarketProbabilities = (market) => {
+  const total = market.yesVolume + market.noVolume;
+
+  const yesProbability =
+    total === 0 ? 50 : Math.round((market.yesVolume / total) * 100);
+
+  const noProbability = 100 - yesProbability;
+
+  market.outcomes = [
+    { label: "YES", probability: yesProbability },
+    { label: "NO", probability: noProbability },
+  ];
+};
 
 /* ---------------- PLACE TRADE ---------------- */
 const placeTrade = async (req, res) => {
   try {
     const result = betSchema.safeParse(req.body);
-
     if (!result.success) {
       return res.status(400).json({
         message: "Invalid trade data",
@@ -36,19 +50,28 @@ const placeTrade = async (req, res) => {
       return res.status(400).json({ message: "Market expired" });
     }
 
+    // update volume per outcome
+    if (outcome === "YES") {
+      market.yesVolume += amount;
+    } else {
+      market.noVolume += amount;
+    }
+
+    // update implied probabilities
+    updateMarketProbabilities(market);
+
+    // total market volume
+    market.volume += amount;
+
     const selectedOutcome = market.outcomes.find(
       (o) => o.label === outcome
     );
-
-    if (!selectedOutcome) {
-      return res.status(400).json({ message: "Invalid outcome" });
-    }
 
     const bet = await Bet.create({
       marketId,
       outcome,
       amount,
-      price: selectedOutcome.probability,
+      price: selectedOutcome.probability, // lock entry price
       userId: req.user.id,
       status: "OPEN",
     });
@@ -56,16 +79,16 @@ const placeTrade = async (req, res) => {
     user.balance -= amount;
     await user.save();
 
-    market.volume += amount;
     await market.save();
 
     res.status(201).json({
       message: "Trade placed successfully",
       bet,
       balance: user.balance,
+      market,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Place trade error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -74,11 +97,12 @@ const placeTrade = async (req, res) => {
 const getMyBets = async (req, res) => {
   try {
     const bets = await Bet.find({ userId: req.user.id })
-      .populate("marketId", "question endDate")
+      .populate("marketId", "question endDate outcomes")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ bets });
   } catch (error) {
+    console.error("Get bets error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -87,7 +111,6 @@ const getMyBets = async (req, res) => {
 const sellMyBets = async (req, res) => {
   try {
     const result = sellBetSchema.safeParse(req.body);
-
     if (!result.success) {
       return res.status(400).json({
         message: "Invalid sell data",
@@ -118,15 +141,22 @@ const sellMyBets = async (req, res) => {
       return res.status(404).json({ message: "Market not found" });
     }
 
-    // refund logic (simple version)
-    const refund = amount;
+    // reverse outcome volume
+    if (bet.outcome === "YES") {
+      market.yesVolume = Math.max(0, market.yesVolume - amount);
+    } else {
+      market.noVolume = Math.max(0, market.noVolume - amount);
+    }
+
+    // update implied probabilities
+    updateMarketProbabilities(market);
+
+    // update total volume
+    market.volume = Math.max(0, market.volume - amount);
 
     const user = await User.findById(req.user.id);
-    user.balance += refund;
+    user.balance += amount;
     await user.save();
-
-    market.volume -= refund;
-    await market.save();
 
     if (amount === bet.amount) {
       bet.status = "CLOSED";
@@ -135,11 +165,13 @@ const sellMyBets = async (req, res) => {
     }
 
     await bet.save();
+    await market.save();
 
     res.json({
       message: "Position sold successfully",
       bet,
       balance: user.balance,
+      market,
     });
   } catch (error) {
     console.error("Sell error:", error);

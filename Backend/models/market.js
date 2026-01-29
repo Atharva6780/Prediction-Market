@@ -5,7 +5,7 @@ const outcomeSchema = new mongoose.Schema(
   {
     label: {
       type: String,
-      required: true, // YES / NO / ranges like 6–8
+      required: true, // YES / NO
     },
     probability: {
       type: Number,
@@ -38,9 +38,9 @@ const marketSchema = new mongoose.Schema(
 
     endDate: {
       type: Date,
-    //   required: true,
     },
 
+    // 🔹 Outcomes with implied probability
     outcomes: {
       type: [outcomeSchema],
       validate: {
@@ -49,9 +49,23 @@ const marketSchema = new mongoose.Schema(
       },
     },
 
+    // 🔹 Total traded volume
     volume: {
       type: Number,
-      default: 0, // total money traded
+      default: 0,
+      min: 0,
+    },
+
+    // 🔹 Volume per outcome (USED FOR IMPLIED PROBABILITY)
+    yesVolume: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    noVolume: {
+      type: Number,
+      default: 0,
       min: 0,
     },
 
@@ -64,16 +78,16 @@ const marketSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-    //   required: true,
     },
 
     resolvedOutcome: {
-      type: String, // label of winning outcome
+      type: String, // YES / NO
     },
   },
   {
-    timestamps: true, // adds createdAt & updatedAt
+    timestamps: true,
   }
 );
 
-module.exports = mongoose.model("Market", marketSchema);
+module.exports =
+  mongoose.models.Market || mongoose.model("Market", marketSchema);

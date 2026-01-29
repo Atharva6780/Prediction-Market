@@ -52,7 +52,7 @@ const MarketDetail = () => {
         },
         body: JSON.stringify({
           marketId,
-          outcome: selectedOutcome, // YES or NO
+          outcome: selectedOutcome,
           amount,
         }),
       });
@@ -67,12 +67,8 @@ const MarketDetail = () => {
       alert(`Trade placed on ${selectedOutcome} ✅`);
       setAmount(0);
 
-      // update volume locally (optional UX improvement)
-      setMarket((prev) => ({
-        ...prev,
-        volume: prev.volume + amount,
-      }));
-
+      // update market locally with latest probabilities
+      setMarket(data.market);
     } catch (error) {
       console.error(error);
       alert("Trade failed");
@@ -82,6 +78,13 @@ const MarketDetail = () => {
   /* ---------------- UI STATES ---------------- */
   if (loading) return <div className="p-6">Loading...</div>;
   if (!market) return <div className="p-6">Market not found</div>;
+
+  // 🔥 extract probabilities
+  const yesOutcome = market.outcomes.find((o) => o.label === "YES");
+  const noOutcome = market.outcomes.find((o) => o.label === "NO");
+
+  const yesPrice = yesOutcome?.probability ?? 50;
+  const noPrice = noOutcome?.probability ?? 50;
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-6">
@@ -108,13 +111,17 @@ const MarketDetail = () => {
 
           {/* Outcomes summary */}
           <div className="flex gap-4 text-sm text-gray-700">
-            {market.outcomes.map((o, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-blue-500" />
-                <span>{o.label}</span>
-                <span className="text-gray-500">{o.probability}%</span>
-              </div>
-            ))}
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-green-500" />
+              <span>YES</span>
+              <span className="text-gray-500">{yesPrice}%</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-red-500" />
+              <span>NO</span>
+              <span className="text-gray-500">{noPrice}%</span>
+            </div>
           </div>
 
           {/* Chart placeholder */}
@@ -134,7 +141,7 @@ const MarketDetail = () => {
         {/* RIGHT SIDE – TRADE PANEL */}
         <div className="bg-white border rounded-xl p-5 space-y-4">
 
-          {/* YES / NO selection */}
+          {/* YES / NO selection WITH PROBABILITY */}
           <div className="flex gap-3">
             <button
               onClick={() => setSelectedOutcome("YES")}
@@ -144,7 +151,7 @@ const MarketDetail = () => {
                   : "bg-green-100 text-green-700"
               }`}
             >
-              Yes
+              YES {yesPrice}¢
             </button>
 
             <button
@@ -155,7 +162,7 @@ const MarketDetail = () => {
                   : "bg-red-100 text-red-700"
               }`}
             >
-              No
+              NO {noPrice}¢
             </button>
           </div>
 
