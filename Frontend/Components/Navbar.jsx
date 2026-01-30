@@ -90,20 +90,8 @@ const Navbar = () => {
             {/* Balance */}
             {isLoggedIn && (
               <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg shadow-sm">
-                <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-br from-green-400 to-green-500 rounded-full shadow-sm">
-                  <svg 
-                    className="w-3.5 h-3.5 text-white" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2.5} 
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" 
-                    />
-                  </svg>
+                <div className="flex items-center text-white justify-center w-6 h-6 bg-gradient-to-br from-green-400 to-green-500 rounded-full shadow-sm">
+                  ₹
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider leading-none">Balance</span>

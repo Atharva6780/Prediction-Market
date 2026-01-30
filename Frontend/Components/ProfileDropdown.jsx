@@ -51,8 +51,7 @@ const ProfileDropdown = () => {
                   U
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-gray-900">User Account</div>
-                  <div className="text-xs text-gray-500">Manage your profile</div>
+                  <div className="text-sm font-bold text-gray-900">User Name</div>
                 </div>
               </div>
             </div>

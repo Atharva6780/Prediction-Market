@@ -42,17 +42,17 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-6">
         
         {/* Hero Section */}
-        <div className="mb-12 text-center">
+        {/* <div className="mb-12 text-center">
           <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">
             Explore <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Prediction Markets</span>
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Trade on the outcomes of real-world events. Make predictions, earn rewards, and discover market sentiment.
           </p>
-        </div>
+        </div> */}
 
         {/* Stats Bar */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
