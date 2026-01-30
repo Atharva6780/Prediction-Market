@@ -33,52 +33,111 @@ const Navbar = () => {
   }, [token]);
 
   return (
-    <nav className="w-full border bg-white">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
-
-        {/* LEFT */}
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Logo" className="h-10 w-10" />
-          <span className="text-xl font-semibold text-gray-900">
-            PredictionMarket
-          </span>
-        </Link>
-
-        {/* CENTER */}
-        <div className="flex-1 max-w-md">
-          <input
-            type="text"
-            placeholder="Search markets..."
-            className="w-full px-4 py-2 border rounded-md text-sm focus:ring-2 focus:ring-[#2965a4]"
-          />
-        </div>
-
-        {/* RIGHT */}
-        <div className="flex items-center gap-6 text-sm">
-
-          {/* Balance */}
-          {isLoggedIn && (
-            <div className="text-gray-700 font-medium">
-              Balance: <span className="text-gray-900">₹{balance}</span>
+    <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          
+          {/* LEFT - Logo */}
+          <Link 
+            to="/" 
+            className="flex items-center gap-2.5 group transition-all duration-200 hover:opacity-80"
+          >
+            <div className="relative">
+              <img 
+                src={logo} 
+                alt="Logo" 
+                className="h-9 w-9 transition-transform duration-200 group-hover:scale-105" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
             </div>
-          )}
+            <span className="text-lg font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 bg-clip-text text-transparent hidden sm:block">
+              PredictionMarket
+            </span>
+          </Link>
 
-          {/* Auth */}
-          {!isLoggedIn ? (
-            <>
-              <Link to="/login" className="hover:text-[#2965a4]">
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="bg-[#1d4570] text-white px-4 py-2 rounded-md hover:bg-[#2965a4]"
-              >
-                Sign up
-              </Link>
-            </>
-          ) : (
-            <ProfileDropdown />
-          )}
+          {/* CENTER - Search */}
+          <div className="flex-1 max-w-xl mx-4 lg:mx-8">
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <svg 
+                  className="h-4 w-4 text-gray-400 group-focus-within:text-gray-600 transition-colors" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                  />
+                </svg>
+              </div>
+              <input
+                type="text"
+                placeholder="Search markets..."
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm placeholder-gray-500 
+                         transition-all duration-200 
+                         focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none
+                         hover:border-gray-300"
+              />
+            </div>
+          </div>
+
+          {/* RIGHT - Actions */}
+          <div className="flex items-center gap-3 sm:gap-4">
+
+            {/* Balance */}
+            {isLoggedIn && (
+              <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg shadow-sm">
+                <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-br from-green-400 to-green-500 rounded-full shadow-sm">
+                  <svg 
+                    className="w-3.5 h-3.5 text-white" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round" 
+                      strokeWidth={2.5} 
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" 
+                    />
+                  </svg>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider leading-none">Balance</span>
+                  <span className="text-sm font-bold text-gray-900 leading-tight">₹{balance.toLocaleString()}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Auth Buttons */}
+            {!isLoggedIn ? (
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Link 
+                  to="/login" 
+                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors duration-200 hidden sm:block"
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/signup"
+                  className="group relative px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-lg 
+                           shadow-lg shadow-blue-500/30 
+                           hover:shadow-xl hover:shadow-blue-500/40 
+                           hover:from-blue-700 hover:to-blue-800
+                           transition-all duration-200 
+                           active:scale-95"
+                >
+                  <span className="relative z-10">Sign up</span>
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
+                </Link>
+              </div>
+            ) : (
+              <ProfileDropdown />
+            )}
+          </div>
         </div>
       </div>
     </nav>
