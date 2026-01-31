@@ -7,6 +7,7 @@ import Home from "../Pages/Home";
 import AdminForm from "../Pages/AdminForm";
 import MarketDetail from "../Pages/MarketDetails";
 import Portfolio from "../Pages/Portfolio";
+import DepositPage from "../Pages/DepositPage";
 
 const App = () => {
   return (
@@ -20,6 +21,8 @@ const App = () => {
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/adminform" element={<AdminForm />} />
         <Route path="/markets/:marketId" element={<MarketDetail />} />
+        <Route path="/deposit" element={<DepositPage />} />
+
         {/* <Route path="/register" element={<Register />} /> */}
       </Routes>
     </>
