@@ -1,5 +1,5 @@
 const { cardSchema } = require("../schema/cardSchema");
-const Market = require("../models/Market");
+const Market = require("../models/market");
 
 /* ---------------- CREATE MARKET (ADMIN) ---------------- */
 const createCard = async (req, res) => {
