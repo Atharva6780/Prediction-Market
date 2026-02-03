@@ -24,6 +24,13 @@ const Navbar = () => {
           },
         });
 
+        // 🔴 Token expired or invalid
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem("token");
+          navigate("/login");
+          return;
+        }
+
         const data = await res.json();
         setBalance(data.user.balance);
       } catch (error) {
@@ -32,24 +39,23 @@ const Navbar = () => {
     };
 
     fetchBalance();
-  }, [token]);
+  }, [token, navigate]);
 
   return (
     <>
       <nav className="w-full bg-white border-b border-gray-200 sticky top-0 z-50 backdrop-blur-sm bg-white/95">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            
             {/* LEFT - Logo */}
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="flex items-center gap-2.5 group transition-all duration-200 hover:opacity-80"
             >
               <div className="relative">
-                <img 
-                  src={logo} 
-                  alt="Logo" 
-                  className="h-9 w-9 transition-transform duration-200 group-hover:scale-105" 
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className="h-9 w-9 transition-transform duration-200 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
               </div>
@@ -62,17 +68,17 @@ const Navbar = () => {
             <div className="flex-1 max-w-xl mx-4 lg:mx-8">
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                  <svg 
-                    className="h-4 w-4 text-gray-400 group-focus-within:text-gray-600 transition-colors" 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className="h-4 w-4 text-gray-400 group-focus-within:text-gray-600 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
-                    <path 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round" 
-                      strokeWidth={2} 
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
                 </div>
@@ -89,7 +95,6 @@ const Navbar = () => {
 
             {/* RIGHT - Actions */}
             <div className="flex items-center gap-3 sm:gap-4">
-
               {/* Balance */}
               {isLoggedIn && (
                 <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg shadow-sm">
@@ -124,8 +129,8 @@ const Navbar = () => {
               {/* Auth Buttons */}
               {!isLoggedIn ? (
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <Link 
-                    to="/login" 
+                  <Link
+                    to="/login"
                     className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors duration-200 hidden sm:block"
                   >
                     Login
